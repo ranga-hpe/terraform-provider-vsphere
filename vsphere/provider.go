@@ -138,6 +138,7 @@ func Provider() *schema.Provider {
 			"vsphere_vm_storage_policy":                       resourceVMStoragePolicy(),
 			"vsphere_role":                                    resourceVsphereRole(),
 			"vsphere_entity_permissions":                      resourceVsphereEntityPermissions(),
+			"vsphere_host_pm":                                 resourceVsphereHostPm(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
