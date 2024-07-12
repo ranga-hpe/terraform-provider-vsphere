@@ -157,6 +157,10 @@ func resourceVSphereResourcePoolCreate(d *schema.ResourceData, meta interface{})
 	}
 	version := viapi.ParseVersionFromClient(client)
 	rpSpec := expandResourcePoolConfigSpec(d, version)
+	err = scale_descendants_shares_validate(version, rpSpec, prp)
+	if err != nil {
+		return err
+	}
 	rp, err := resourcepool.Create(prp, d.Get("name").(string), rpSpec)
 	if err != nil {
 		return err
@@ -235,6 +239,14 @@ func resourceVSphereResourcePoolUpdate(d *schema.ResourceData, meta interface{})
 	}
 	version := viapi.ParseVersionFromClient(client)
 	rpSpec := expandResourcePoolConfigSpec(d, version)
+	prp, err := resourcepool.FromID(client, d.Get("parent_resource_pool_id").(string))
+	if err != nil {
+		return err
+	}
+	err = scale_descendants_shares_validate(version, rpSpec, prp)
+	if err != nil {
+		return err
+	}
 	err = resourcepool.Update(rp, d.Get("name").(string), rpSpec)
 	if err != nil {
 		return err
@@ -387,6 +399,22 @@ func resourceVSphereResourcePoolReadTags(d *schema.ResourceData, meta interface{
 		}
 	} else {
 		log.Printf("[DEBUG] %s: Tags unsupported on this connection, skipping tag read", resourceVSphereResourcePoolIDString(d))
+	}
+	return nil
+}
+
+// check whether parent resource pool has "scale_descendants_shares" enabled, if yes ignore the setting for the present resource
+func scale_descendants_shares_validate(version viapi.VSphereVersion, obj *types.ResourceConfigSpec, prp *object.ResourcePool) error {
+	if version.Newer(viapi.VSphereVersion{Product: version.Product, Major: 7, Minor: 0}) {
+		// get the cluster details to check the cluster scale_descendants_shares
+		prpProp, err := resourcepool.Properties(prp)
+		if err != nil {
+			return fmt.Errorf("error getting properties of resource pool: %s", err)
+		}
+		prpDrsConfig := *&prpProp.Config
+		if prpDrsConfig.ScaleDescendantsShares == string(types.ResourceConfigSpecScaleSharesBehaviorScaleCpuAndMemoryShares) {
+			obj.ScaleDescendantsShares = ""
+		}
 	}
 	return nil
 }
