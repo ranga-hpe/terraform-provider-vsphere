@@ -34,7 +34,7 @@ func dataSourceVSphereHostThumbprint() *schema.Resource {
 }
 
 func dataSourceVSphereHostThumbprintRead(d *schema.ResourceData, _ interface{}) error {
-	config := &tls.Config{}
+	config := &tls.Config{MinVersion: tls.VersionTLS12}
 	config.InsecureSkipVerify = d.Get("insecure").(bool)
 	conn, err := tls.Dial("tcp", d.Get("address").(string)+":"+d.Get("port").(string), config)
 	if err != nil {

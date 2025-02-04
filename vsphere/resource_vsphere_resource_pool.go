@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package vsphere
 
 import (
@@ -111,9 +114,9 @@ func resourceVSphereResourcePool() *schema.Resource {
 			Default:     -1,
 		},
 		"scale_descendants_shares": {
-			Type:         schema.TypeString,
-			Description:  "Determines if the shares of all descendants of the resource pool are scaled up or down when the shares of the resource pool are scaled up or down.",
-			Optional:     true,
+			Type:        schema.TypeString,
+			Description: "Determines if the shares of all descendants of the resource pool are scaled up or down when the shares of the resource pool are scaled up or down.",
+			Optional:    true,
 			Default:      string(types.ResourceConfigSpecScaleSharesBehaviorDisabled),
 			ValidateFunc: validation.StringInSlice(resourcePoolScaleDescendantsSharesAllowedValues, false),
 		},
